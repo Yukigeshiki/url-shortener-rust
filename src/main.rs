@@ -10,11 +10,15 @@ async fn main() -> std::io::Result<()> {
     init_subscriber(subscriber);
 
     let configuration = get_configuration().expect("Failed to read configuration.");
+    let redis_client = configuration
+        .redis
+        .get_redis_client()
+        .expect("Failed to get Redis client.");
 
     let port = configuration.application.port;
     let address = format!("{}:{}", configuration.application.host, port);
     tracing::info!("Application listening on port {}", port);
     let listener = TcpListener::bind(address)?;
-    run(listener)?.await?;
+    run(listener, redis_client)?.await?;
     Ok(())
 }

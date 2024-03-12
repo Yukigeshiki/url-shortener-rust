@@ -1,3 +1,5 @@
+use redis::{Client, RedisResult};
+use secrecy::{ExposeSecret, Secret};
 use std::convert::{TryFrom, TryInto};
 
 use serde_aux::prelude::deserialize_number_from_string;
@@ -5,6 +7,7 @@ use serde_aux::prelude::deserialize_number_from_string;
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub application: ApplicationSettings,
+    pub redis: RedisSettings,
 }
 
 #[derive(serde::Deserialize)]
@@ -12,6 +15,28 @@ pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct RedisSettings {
+    pub username: String,
+    pub password: Secret<String>,
+    pub host: Secret<String>,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub port: u16,
+}
+
+impl RedisSettings {
+    pub fn get_redis_client(&self) -> RedisResult<Client> {
+        let connection_url = format!(
+            "redis://{}:{}@{}:{}",
+            self.username,
+            self.password.expose_secret(),
+            self.host.expose_secret(),
+            self.port
+        );
+        Client::open(connection_url)
+    }
 }
 
 #[allow(clippy::module_name_repetitions)]
