@@ -1,6 +1,7 @@
 use std::net::TcpListener;
 
 use once_cell::sync::Lazy;
+use url_shortener::configuration::get_configuration;
 use url_shortener::startup::run;
 use url_shortener::telemetry::{get_subscriber, init_subscriber};
 
@@ -31,7 +32,13 @@ async fn spawn_app() -> TestApp {
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
 
-    let server = run(listener).expect("Failed to bind address");
+    let configuration = get_configuration().expect("Failed to read configuration.");
+    let redis_client = configuration
+        .redis
+        .get_redis_client()
+        .expect("Failed to get Redis client.");
+
+    let server = run(listener, redis_client).expect("Failed to bind address");
     let _ = tokio::spawn(server);
     TestApp { address }
 }
