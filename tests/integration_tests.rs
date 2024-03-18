@@ -1,3 +1,4 @@
+use actix_web::http::header::CONTENT_TYPE;
 use std::net::TcpListener;
 
 use once_cell::sync::Lazy;
@@ -56,4 +57,20 @@ async fn health_check_is_success() {
 
     assert!(res.status().is_success());
     assert_eq!(Some(0), res.content_length());
+}
+
+#[tokio::test]
+async fn add_url_is_success() {
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    let res = client
+        .post(&format!("{}/url/add", &app.address))
+        .body(r#"{"longUrl": "https://codingchallenges.fyi/challenges/challenge-url-shortener/"}"#)
+        .header(CONTENT_TYPE, "application/json")
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert_eq!(200, res.status().as_u16());
 }

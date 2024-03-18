@@ -19,8 +19,8 @@ pub struct ApplicationSettings {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct RedisSettings {
-    pub username: String,
-    pub password: Secret<String>,
+    // pub username: String,
+    // pub password: Secret<String>,
     pub host: Secret<String>,
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
@@ -28,13 +28,7 @@ pub struct RedisSettings {
 
 impl RedisSettings {
     pub fn get_redis_client(&self) -> RedisResult<Client> {
-        let connection_url = format!(
-            "redis://{}:{}@{}:{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host.expose_secret(),
-            self.port
-        );
+        let connection_url = format!("redis://@{}:{}", self.host.expose_secret(), self.port);
         Client::open(connection_url)
     }
 }

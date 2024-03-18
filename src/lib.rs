@@ -9,5 +9,6 @@ pub use startup::*;
 
 pub mod configuration;
 mod handler;
+mod macros;
 pub mod startup;
 pub mod telemetry;

@@ -1,0 +1,14 @@
+services:
+  redis:
+    container_name: url-shortener-redis
+    image: "redis:alpine"
+    command: redis-server
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    volumes:
+      - url-shortener-redis-store:/var/lib/redis
+
+volumes:
+  url-shortener-redis-store:

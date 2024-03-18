@@ -10,6 +10,11 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: redis:alpine
+        ports:
+          - 6379:6379
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -34,6 +39,11 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: redis:alpine
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable

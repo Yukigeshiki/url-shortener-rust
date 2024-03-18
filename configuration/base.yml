@@ -2,7 +2,7 @@ application:
   port: 8080
   host: 0.0.0.0
 redis:
-  host: "127.0.0.1"
+  host: 127.0.0.1
   port: 6379
-  username: "username"
-  password: "password"
+  username: username
+  password: password
