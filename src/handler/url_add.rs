@@ -17,12 +17,12 @@ pub struct LongUrlJsonData {
 
 impl_json_display!(LongUrlJsonData);
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct ResponsePayload {
-    key: String,
-    long_url: String,
-    short_url: String,
+pub struct ResponsePayload {
+    pub key: String,
+    pub long_url: String,
+    pub short_url: String,
 }
 
 impl_json_display!(ResponsePayload);

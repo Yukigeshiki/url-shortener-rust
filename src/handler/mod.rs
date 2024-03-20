@@ -1,8 +1,10 @@
 pub use health_check::*;
 pub use url_add::*;
+pub use url_redirect::*;
 
 mod health_check;
 mod url_add;
+mod url_redirect;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +22,7 @@ pub struct Fail {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("Failed to serialise payload to JSON: {0}")]
+    #[error("Failed to serialise/deserialise payload: {0}")]
     Serialisation(String),
 
     #[error("Failed to get Redis connection: {0}")]
