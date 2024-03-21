@@ -9,7 +9,6 @@ pub use startup::*;
 
 pub mod configuration;
 mod handler;
-mod macros;
 mod parser;
 pub mod startup;
 pub mod telemetry;

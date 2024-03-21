@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 
 use actix_web::{web, HttpResponse};
-use redis::{Client, Commands};
+use redis::{Client, Commands, ErrorKind};
 use sha256::digest;
 use tracing_actix_web::RequestId;
 
@@ -94,31 +94,29 @@ async fn add(redis_client: &Client, long_url: &str) -> Result<ResponsePayload, E
     let mut conn = redis_client
         .get_connection()
         .map_err(|e| Error::RedisConnection(e.to_string()))?;
-    match conn.exists::<&str, i8>(key) {
-        Ok(val) => {
-            if val > 0 {
-                let current = conn
-                    .get::<&str, String>(key)
-                    .map_err(|e| Error::RedisQuery(e.to_string()))?;
-                let deserialised_current =
-                    serde_json::from_str::<ResponsePayload>(current.as_str())
-                        .map_err(|e| Error::Serialisation(e.to_string()))?;
-                if payload.long_url != deserialised_current.long_url {
-                    let key = &digest(format!("{}a", payload.long_url))[0..6];
-                    payload.key = key.to_string();
-                    let serialised = serde_json::to_string(&payload)
-                        .map_err(|e| Error::Serialisation(e.to_string()))?;
-                    conn.set(key, serialised)
-                        .map_err(|e| Error::RedisQuery(e.to_string()))?;
-                }
-            } else {
+
+    match conn.get::<&str, String>(key) {
+        Ok(current) => {
+            let deserialised_current = serde_json::from_str::<ResponsePayload>(current.as_str())
+                .map_err(|e| Error::Serialisation(e.to_string()))?;
+            if payload.long_url != deserialised_current.long_url {
+                let key = &digest(format!("{}a", payload.long_url))[0..6];
+                payload.key = key.to_string();
+                let serialised = serde_json::to_string(&payload)
+                    .map_err(|e| Error::Serialisation(e.to_string()))?;
                 conn.set(key, serialised)
                     .map_err(|e| Error::RedisQuery(e.to_string()))?;
             }
         }
-        Err(err) => {
-            Err(Error::RedisQuery(err.to_string()))?;
-        }
+        Err(err) => match err.kind() {
+            ErrorKind::TypeError => {
+                conn.set(key, serialised)
+                    .map_err(|e| Error::RedisQuery(e.to_string()))?;
+            }
+            _ => {
+                Err(Error::RedisQuery(err.to_string()))?;
+            }
+        },
     }
 
     Ok(payload)
