@@ -113,3 +113,42 @@ async fn url_redirect_error_is_failure() {
 
     assert_eq!(500, res.status().as_u16());
 }
+
+#[tokio::test]
+async fn url_delete_is_success() {
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    client
+        .post(&format!("{}/", &app.address))
+        .body(r#"{"longUrl": "https://codingchallenges.fyi/challenges/challenge-url-shortener/"}"#)
+        .header(CONTENT_TYPE, "application/json")
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    let res = client
+        .delete(&format!("{}/4168cd", &app.address))
+        .header(CONTENT_TYPE, "application/json")
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert_eq!(200, res.status().as_u16());
+    assert!(res.content_length().is_some());
+}
+
+#[tokio::test]
+async fn url_delete_not_found_is_failure() {
+    let app = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    let res = client
+        .delete(&format!("{}/4168cy", &app.address))
+        .header(CONTENT_TYPE, "application/json")
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert_eq!(404, res.status().as_u16());
+}

@@ -70,9 +70,16 @@ async fn add(redis_client: &Client, long_url: String) -> Result<ResponsePayload,
     let mut conn = redis_client
         .get_connection()
         .map_err(|e| Error::RedisConnection(e.to_string()))?;
-    if conn.exists::<&str, String>(key).is_err() {
-        conn.set(key, serialised)
-            .map_err(|e| Error::RedisQuery(e.to_string()))?;
+    match conn.exists::<&str, i8>(key) {
+        Ok(val) => {
+            if val == 0 {
+                conn.set(key, serialised)
+                    .map_err(|e| Error::RedisQuery(e.to_string()))?;
+            }
+        }
+        Err(err) => {
+            Err(Error::RedisQuery(err.to_string()))?;
+        }
     }
 
     Ok(payload)

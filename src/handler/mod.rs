@@ -1,9 +1,11 @@
 pub use health_check::*;
 pub use url_add::*;
+pub use url_delete::*;
 pub use url_redirect::*;
 
 mod health_check;
 mod url_add;
+mod url_delete;
 mod url_redirect;
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -30,4 +32,7 @@ pub enum Error {
 
     #[error("Failed to execute Redis Query: {0}")]
     RedisQuery(String),
+
+    #[error("Item with key '{0}' not not exist")]
+    NotFound(String),
 }

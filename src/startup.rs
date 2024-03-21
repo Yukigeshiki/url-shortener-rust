@@ -7,7 +7,7 @@ use actix_web::{web, App, HttpServer};
 use redis::Client;
 use tracing_actix_web::TracingLogger;
 
-use crate::handler::{health_check, url_add, url_redirect, url_redirect_error};
+use crate::handler::{health_check, url_add, url_delete, url_redirect, url_redirect_error};
 
 #[allow(clippy::too_many_lines)]
 pub fn run(listener: TcpListener, redis_client: Client) -> Result<Server, std::io::Error> {
@@ -26,6 +26,7 @@ pub fn run(listener: TcpListener, redis_client: Client) -> Result<Server, std::i
             .route("/", web::post().to(url_add))
             .route("/{key}", web::get().to(url_redirect))
             .route("/redirect-error/{msg}", web::get().to(url_redirect_error))
+            .route("/{key}", web::delete().to(url_delete))
             .app_data(redis_client.clone())
     })
     .listen(listener)?
