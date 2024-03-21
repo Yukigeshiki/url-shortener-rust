@@ -63,7 +63,7 @@ pub async fn url_add(
 async fn add(redis_client: &Client, long_url: String) -> Result<ResponsePayload, Error> {
     let key = &digest(&long_url)[0..6];
     let short_url = format!("http://localhost/{key}");
-    let payload = ResponsePayload {
+    let mut payload = ResponsePayload {
         key: key.to_string(),
         long_url,
         short_url,
@@ -76,7 +76,22 @@ async fn add(redis_client: &Client, long_url: String) -> Result<ResponsePayload,
         .map_err(|e| Error::RedisConnection(e.to_string()))?;
     match conn.exists::<&str, i8>(key) {
         Ok(val) => {
-            if val == 0 {
+            if val > 0 {
+                let current = conn
+                    .get::<&str, String>(key)
+                    .map_err(|e| Error::RedisQuery(e.to_string()))?;
+                let deserialised_current =
+                    serde_json::from_str::<ResponsePayload>(current.as_str())
+                        .map_err(|e| Error::Serialisation(e.to_string()))?;
+                if payload.long_url != deserialised_current.long_url {
+                    let key = &digest(format!("{}a", payload.long_url))[0..6];
+                    payload.key = key.to_string();
+                    let serialised = serde_json::to_string(&payload)
+                        .map_err(|e| Error::Serialisation(e.to_string()))?;
+                    conn.set(key, serialised)
+                        .map_err(|e| Error::RedisQuery(e.to_string()))?;
+                }
+            } else {
                 conn.set(key, serialised)
                     .map_err(|e| Error::RedisQuery(e.to_string()))?;
             }
