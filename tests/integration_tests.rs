@@ -89,7 +89,7 @@ async fn url_redirect_is_success() {
         .expect("Failed to execute request.");
 
     let res = client
-        .get(&format!("{}/4168cd", &app.address))
+        .get(&format!("{}/4168cd70", &app.address))
         .header(CONTENT_TYPE, "application/json")
         .send()
         .await
@@ -105,7 +105,7 @@ async fn url_redirect_not_found_is_failure() {
     let client = reqwest::Client::new();
 
     let res = client
-        .get(&format!("{}/4168cy", &app.address))
+        .get(&format!("{}/4168cd7y", &app.address))
         .header(CONTENT_TYPE, "application/json")
         .send()
         .await
@@ -128,7 +128,7 @@ async fn url_delete_is_success() {
         .expect("Failed to execute request.");
 
     let res = client
-        .delete(&format!("{}/4168cd", &app.address))
+        .delete(&format!("{}/4168cd70", &app.address))
         .header(CONTENT_TYPE, "application/json")
         .send()
         .await
@@ -144,7 +144,7 @@ async fn url_delete_not_found_is_failure() {
     let client = reqwest::Client::new();
 
     let res = client
-        .delete(&format!("{}/4168cy", &app.address))
+        .delete(&format!("{}/4168cd7y", &app.address))
         .send()
         .await
         .expect("Failed to execute request.");

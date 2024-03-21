@@ -50,7 +50,7 @@ pub async fn url_add(
     json_data: web::Json<UrlJsonData>,
     redis_client: web::Data<Client>,
 ) -> HttpResponse {
-    let new_url: UrlNew = match json_data.0.try_into() {
+    let url: UrlNew = match json_data.0.try_into() {
         Ok(v) => v,
         Err(err) => {
             return HttpResponse::BadRequest().json(Fail {
@@ -60,7 +60,7 @@ pub async fn url_add(
         }
     };
 
-    match add(&redis_client, new_url.long_url.as_ref()).await {
+    match add(&redis_client, url.long_url.as_ref()).await {
         Ok(payload) => {
             tracing::info!("{payload}");
             HttpResponse::Ok().json(Success {
@@ -81,7 +81,7 @@ pub async fn url_add(
 
 #[tracing::instrument(name = "URL add", skip(redis_client, long_url))]
 async fn add(redis_client: &Client, long_url: &str) -> Result<ResponsePayload, Error> {
-    let key = &digest(long_url)[0..6];
+    let key = &digest(long_url)[0..8];
     let short_url = format!("http://localhost/{key}");
     let mut payload = ResponsePayload {
         key: key.to_string(),
@@ -89,7 +89,7 @@ async fn add(redis_client: &Client, long_url: &str) -> Result<ResponsePayload, E
         short_url,
     };
 
-    let serialised =
+    let mut serialised =
         serde_json::to_string(&payload).map_err(|e| Error::Serialisation(e.to_string()))?;
     let mut conn = redis_client
         .get_connection()
@@ -100,9 +100,9 @@ async fn add(redis_client: &Client, long_url: &str) -> Result<ResponsePayload, E
             let deserialised_current = serde_json::from_str::<ResponsePayload>(current.as_str())
                 .map_err(|e| Error::Serialisation(e.to_string()))?;
             if payload.long_url != deserialised_current.long_url {
-                let key = &digest(format!("{}a", payload.long_url))[0..6];
+                let key = &digest(format!("{}a", payload.long_url))[0..8];
                 payload.key = key.to_string();
-                let serialised = serde_json::to_string(&payload)
+                serialised = serde_json::to_string(&payload)
                     .map_err(|e| Error::Serialisation(e.to_string()))?;
                 conn.set(key, serialised)
                     .map_err(|e| Error::RedisQuery(e.to_string()))?;

@@ -1,0 +1,76 @@
+{
+	"info": {
+		"_postman_id": "a02303a1-7db7-43bd-9ccb-5c67fb8553f7",
+		"name": "url-shortener",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13901883"
+	},
+	"item": [
+		{
+			"name": "url add",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"longUrl\": \"https://codingchallenges.fyi/challenges/challenge-url-shortener/\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "url redirect",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/4168cd70",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"4168cd70"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "url delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/4168cd70",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"4168cd70"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
