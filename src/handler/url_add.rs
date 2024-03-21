@@ -7,7 +7,11 @@ use tracing_actix_web::RequestId;
 
 use crate::handler::{Error, Fail, Success};
 use crate::impl_json_display;
-use crate::parser::{LongUrl, UrlNew};
+use crate::parser::LongUrl;
+
+struct UrlNew {
+    pub long_url: LongUrl,
+}
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]

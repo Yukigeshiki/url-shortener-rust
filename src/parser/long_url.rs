@@ -1,9 +1,5 @@
 use validator::ValidateUrl;
 
-pub struct UrlNew {
-    pub long_url: LongUrl,
-}
-
 #[derive(Debug)]
 pub struct LongUrl(String);
 
