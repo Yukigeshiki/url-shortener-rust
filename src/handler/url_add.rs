@@ -7,15 +7,16 @@ use tracing_actix_web::RequestId;
 
 use crate::handler::{Error, Fail, Success};
 use crate::impl_json_display;
+use crate::parser::{LongUrl, UrlNew};
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
-pub struct LongUrlJsonData {
+pub struct UrlJsonData {
     long_url: String,
 }
 
-impl_json_display!(LongUrlJsonData);
+impl_json_display!(UrlJsonData);
 
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,6 +28,15 @@ pub struct ResponsePayload {
 
 impl_json_display!(ResponsePayload);
 
+impl TryFrom<UrlJsonData> for UrlNew {
+    type Error = String;
+
+    fn try_from(value: UrlJsonData) -> Result<Self, Self::Error> {
+        let long_url = LongUrl::parse(value.long_url)?;
+        Ok(Self { long_url })
+    }
+}
+
 #[allow(clippy::async_yields_async)]
 #[tracing::instrument(
     name = "URL add route",
@@ -37,10 +47,20 @@ impl_json_display!(ResponsePayload);
 )]
 pub async fn url_add(
     request_id: RequestId,
-    json_data: web::Json<LongUrlJsonData>,
+    json_data: web::Json<UrlJsonData>,
     redis_client: web::Data<Client>,
 ) -> HttpResponse {
-    match add(&redis_client, json_data.0.long_url).await {
+    let new_url: UrlNew = match json_data.0.try_into() {
+        Ok(v) => v,
+        Err(err) => {
+            return HttpResponse::BadRequest().json(Fail {
+                request_id: request_id.to_string(),
+                error: err,
+            });
+        }
+    };
+
+    match add(&redis_client, new_url.long_url.as_ref()).await {
         Ok(payload) => {
             tracing::info!("{payload}");
             HttpResponse::Ok().json(Success {
@@ -60,12 +80,12 @@ pub async fn url_add(
 }
 
 #[tracing::instrument(name = "URL add", skip(redis_client, long_url))]
-async fn add(redis_client: &Client, long_url: String) -> Result<ResponsePayload, Error> {
-    let key = &digest(&long_url)[0..6];
+async fn add(redis_client: &Client, long_url: &str) -> Result<ResponsePayload, Error> {
+    let key = &digest(long_url)[0..6];
     let short_url = format!("http://localhost/{key}");
     let mut payload = ResponsePayload {
         key: key.to_string(),
-        long_url,
+        long_url: long_url.to_string(),
         short_url,
     };
 

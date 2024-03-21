@@ -145,7 +145,6 @@ async fn url_delete_not_found_is_failure() {
 
     let res = client
         .delete(&format!("{}/4168cy", &app.address))
-        .header(CONTENT_TYPE, "application/json")
         .send()
         .await
         .expect("Failed to execute request.");
