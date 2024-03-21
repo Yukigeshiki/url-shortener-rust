@@ -100,7 +100,7 @@ async fn url_redirect_is_success() {
 }
 
 #[tokio::test]
-async fn url_redirect_error_is_failure() {
+async fn url_redirect_not_found_is_failure() {
     let app = spawn_app().await;
     let client = reqwest::Client::new();
 
@@ -111,7 +111,7 @@ async fn url_redirect_error_is_failure() {
         .await
         .expect("Failed to execute request.");
 
-    assert_eq!(500, res.status().as_u16());
+    assert_eq!(404, res.status().as_u16());
 }
 
 #[tokio::test]

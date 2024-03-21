@@ -26,16 +26,20 @@ pub async fn url_delete(
                 payload: msg,
             })
         }
-        Err(err) => match err {
-            Error::NotFound(_) => HttpResponse::NotFound().json(Fail {
-                request_id: request_id.to_string(),
-                error: err.to_string(),
-            }),
-            _ => HttpResponse::InternalServerError().json(Fail {
-                request_id: request_id.to_string(),
-                error: err.to_string(),
-            }),
-        },
+        Err(err) => {
+            let err_string = err.to_string();
+            tracing::error!("{err_string}");
+            match err {
+                Error::NotFound(_) => HttpResponse::NotFound().json(Fail {
+                    request_id: request_id.to_string(),
+                    error: err_string,
+                }),
+                _ => HttpResponse::InternalServerError().json(Fail {
+                    request_id: request_id.to_string(),
+                    error: err_string,
+                }),
+            }
+        }
     }
 }
 

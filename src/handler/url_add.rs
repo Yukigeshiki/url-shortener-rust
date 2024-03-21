@@ -48,10 +48,14 @@ pub async fn url_add(
                 payload,
             })
         }
-        Err(err) => HttpResponse::InternalServerError().json(Fail {
-            request_id: request_id.to_string(),
-            error: err.to_string(),
-        }),
+        Err(err) => {
+            let err_string = err.to_string();
+            tracing::error!("{err_string}");
+            HttpResponse::InternalServerError().json(Fail {
+                request_id: request_id.to_string(),
+                error: err_string,
+            })
+        }
     }
 }
 

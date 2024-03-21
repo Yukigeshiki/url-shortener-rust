@@ -33,6 +33,6 @@ pub enum Error {
     #[error("Failed to execute Redis Query: {0}")]
     RedisQuery(String),
 
-    #[error("Item with key '{0}' not not exist")]
+    #[error("Item with key '{0}' cannot be found")]
     NotFound(String),
 }
