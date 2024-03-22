@@ -29,15 +29,13 @@ pub async fn url_delete(
         Err(err) => {
             let err_string = err.to_string();
             tracing::error!("{err_string}");
+            let fail_response = Fail {
+                request_id: request_id.to_string(),
+                error: err_string,
+            };
             match err {
-                Error::NotFound(_) => HttpResponse::NotFound().json(Fail {
-                    request_id: request_id.to_string(),
-                    error: err_string,
-                }),
-                _ => HttpResponse::InternalServerError().json(Fail {
-                    request_id: request_id.to_string(),
-                    error: err_string,
-                }),
+                Error::NotFound(_) => HttpResponse::NotFound().json(fail_response),
+                _ => HttpResponse::InternalServerError().json(fail_response),
             }
         }
     }

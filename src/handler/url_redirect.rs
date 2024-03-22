@@ -2,7 +2,7 @@ use actix_web::{web, HttpResponse};
 use redis::{Client, Commands};
 use tracing_actix_web::RequestId;
 
-use crate::handler::{Error, Fail, ResponsePayload};
+use crate::handler::{Error, Fail, UrlResponsePayload};
 
 #[allow(clippy::async_yields_async)]
 #[tracing::instrument(
@@ -27,21 +27,19 @@ pub async fn url_redirect(
         Err(err) => {
             let err_string = err.to_string();
             tracing::error!("{err_string}");
+            let fail_response = Fail {
+                request_id: request_id.to_string(),
+                error: err_string,
+            };
             match err {
-                Error::NotFound(_) => HttpResponse::NotFound().json(Fail {
-                    request_id: request_id.to_string(),
-                    error: err_string,
-                }),
-                _ => HttpResponse::InternalServerError().json(Fail {
-                    request_id: request_id.to_string(),
-                    error: err_string,
-                }),
+                Error::NotFound(_) => HttpResponse::NotFound().json(fail_response),
+                _ => HttpResponse::InternalServerError().json(fail_response),
             }
         }
     }
 }
 
-async fn get(redis_client: &Client, key: &str) -> Result<ResponsePayload, Error> {
+async fn get(redis_client: &Client, key: &str) -> Result<UrlResponsePayload, Error> {
     let mut conn = redis_client
         .get_connection()
         .map_err(|e| Error::RedisConnection(e.to_string()))?;

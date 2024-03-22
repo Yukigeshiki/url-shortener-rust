@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 pub use health_check::*;
 pub use url_add::*;
 pub use url_delete::*;
@@ -21,6 +23,16 @@ macro_rules! impl_json_display {
         }
     };
 }
+
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UrlResponsePayload {
+    pub key: String,
+    pub long_url: String,
+    pub short_url: String,
+}
+
+impl_json_display!(UrlResponsePayload);
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]

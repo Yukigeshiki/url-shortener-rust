@@ -5,7 +5,7 @@ use redis::{Client, Commands, ErrorKind};
 use sha256::digest;
 use tracing_actix_web::RequestId;
 
-use crate::handler::{Error, Fail, Success};
+use crate::handler::{Error, Fail, Success, UrlResponsePayload};
 use crate::impl_json_display;
 use crate::parser::LongUrl;
 
@@ -21,16 +21,6 @@ pub struct UrlJsonData {
 }
 
 impl_json_display!(UrlJsonData);
-
-#[derive(serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ResponsePayload {
-    pub key: String,
-    pub long_url: String,
-    pub short_url: String,
-}
-
-impl_json_display!(ResponsePayload);
 
 impl TryFrom<UrlJsonData> for UrlNew {
     type Error = String;
@@ -84,10 +74,10 @@ pub async fn url_add(
 }
 
 #[tracing::instrument(name = "URL add", skip(redis_client, long_url))]
-async fn add(redis_client: &Client, long_url: &str) -> Result<ResponsePayload, Error> {
+async fn add(redis_client: &Client, long_url: &str) -> Result<UrlResponsePayload, Error> {
     let key = &digest(long_url)[0..8];
     let short_url = format!("http://localhost/{key}");
-    let mut payload = ResponsePayload {
+    let mut payload = UrlResponsePayload {
         key: key.to_string(),
         long_url: long_url.to_string(),
         short_url,
@@ -101,7 +91,7 @@ async fn add(redis_client: &Client, long_url: &str) -> Result<ResponsePayload, E
 
     match conn.get::<&str, String>(key) {
         Ok(current) => {
-            let deserialised_current = serde_json::from_str::<ResponsePayload>(current.as_str())
+            let deserialised_current = serde_json::from_str::<UrlResponsePayload>(current.as_str())
                 .map_err(|e| Error::Serialisation(e.to_string()))?;
             if payload.long_url != deserialised_current.long_url {
                 let key = &digest(format!("{}a", payload.long_url))[0..8];
