@@ -2,7 +2,7 @@ use actix_web::{web, HttpResponse};
 use redis::{Client, Commands};
 use tracing_actix_web::RequestId;
 
-use crate::handler::{Error, Fail, UrlResponsePayload};
+use crate::handler::{Error, Fail, HandlerResult, UrlResponsePayload};
 
 #[allow(clippy::async_yields_async)]
 #[tracing::instrument(
@@ -39,7 +39,7 @@ pub async fn url_redirect(
     }
 }
 
-async fn get(redis_client: &Client, key: &str) -> Result<UrlResponsePayload, Error> {
+async fn get(redis_client: &Client, key: &str) -> HandlerResult<UrlResponsePayload> {
     let mut conn = redis_client
         .get_connection()
         .map_err(|e| Error::RedisConnection(e.to_string()))?;
