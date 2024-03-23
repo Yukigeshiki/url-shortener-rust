@@ -10,8 +10,7 @@ mod url_add;
 mod url_delete;
 mod url_redirect;
 
-#[allow(clippy::module_name_repetitions)]
-pub type HandlerResult<T> = Result<T, Error>;
+pub type QueryResult<T> = Result<T, Error>;
 
 #[macro_export]
 macro_rules! impl_json_display {

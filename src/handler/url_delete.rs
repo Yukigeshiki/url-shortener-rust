@@ -2,7 +2,7 @@ use actix_web::{web, HttpResponse};
 use redis::{Client, Commands};
 use tracing_actix_web::RequestId;
 
-use crate::handler::{Error, Fail, HandlerResult, Success};
+use crate::handler::{Error, Fail, QueryResult, Success};
 
 #[allow(clippy::async_yields_async)]
 #[tracing::instrument(
@@ -41,23 +41,18 @@ pub async fn url_delete(
     }
 }
 
-async fn delete(redis_client: &Client, key: &str) -> HandlerResult<()> {
+async fn delete(redis_client: &Client, key: &str) -> QueryResult<()> {
     let mut conn = redis_client
         .get_connection()
         .map_err(|e| Error::RedisConnection(e.to_string()))?;
-    match conn.exists::<&str, i8>(key) {
+    match conn.del::<&str, i8>(key) {
         Ok(val) => {
             if val > 0 {
-                conn.del::<&str, i8>(key)
-                    .map_err(|e| Error::RedisQuery(e.to_string()))?;
+                Ok(())
             } else {
-                Err(Error::NotFound(key.to_string()))?;
+                Err(Error::NotFound(key.to_string()))?
             }
         }
-        Err(err) => {
-            Err(Error::RedisQuery(err.to_string()))?;
-        }
+        Err(err) => Err(Error::RedisQuery(err.to_string()))?,
     }
-
-    Ok(())
 }

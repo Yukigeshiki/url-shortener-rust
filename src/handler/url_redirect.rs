@@ -1,8 +1,8 @@
 use actix_web::{web, HttpResponse};
-use redis::{Client, Commands};
+use redis::{Client, Commands, ErrorKind};
 use tracing_actix_web::RequestId;
 
-use crate::handler::{Error, Fail, HandlerResult, UrlResponsePayload};
+use crate::handler::{Error, Fail, QueryResult, UrlResponsePayload};
 
 #[allow(clippy::async_yields_async)]
 #[tracing::instrument(
@@ -39,22 +39,17 @@ pub async fn url_redirect(
     }
 }
 
-async fn get(redis_client: &Client, key: &str) -> HandlerResult<UrlResponsePayload> {
+async fn get(redis_client: &Client, key: &str) -> QueryResult<UrlResponsePayload> {
     let mut conn = redis_client
         .get_connection()
         .map_err(|e| Error::RedisConnection(e.to_string()))?;
-    match conn.exists::<&str, i8>(key) {
-        Ok(val) => {
-            if val > 0 {
-                let payload = conn
-                    .get::<&str, String>(key)
-                    .map_err(|e| Error::RedisQuery(e.to_string()))?;
-                serde_json::from_str(payload.as_str())
-                    .map_err(|e| Error::Serialisation(e.to_string()))
-            } else {
-                Err(Error::NotFound(key.to_string()))?
-            }
+    match conn.get::<&str, String>(key) {
+        Ok(payload) => {
+            serde_json::from_str(payload.as_str()).map_err(|e| Error::Serialisation(e.to_string()))
         }
-        Err(err) => Err(Error::RedisQuery(err.to_string()))?,
+        Err(err) => match err.kind() {
+            ErrorKind::TypeError => Err(Error::NotFound(key.to_string()))?,
+            _ => Err(Error::RedisQuery(err.to_string()))?,
+        },
     }
 }

@@ -5,7 +5,7 @@ use redis::{Client, Commands, ErrorKind};
 use sha256::digest;
 use tracing_actix_web::RequestId;
 
-use crate::handler::{Error, Fail, HandlerResult, Success, UrlResponsePayload};
+use crate::handler::{Error, Fail, QueryResult, Success, UrlResponsePayload};
 use crate::impl_json_display;
 use crate::parser::LongUrl;
 
@@ -74,7 +74,7 @@ pub async fn url_add(
 }
 
 #[tracing::instrument(name = "URL add", skip(redis_client, long_url))]
-async fn add(redis_client: &Client, long_url: &str) -> HandlerResult<UrlResponsePayload> {
+async fn add(redis_client: &Client, long_url: &str) -> QueryResult<UrlResponsePayload> {
     let key = &digest(long_url)[0..8];
     let short_url = format!("http://localhost/{key}");
     let mut payload = UrlResponsePayload {
