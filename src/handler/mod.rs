@@ -36,14 +36,14 @@ pub struct UrlResponsePayload {
 
 impl_json_display!(UrlResponsePayload);
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Success<T: serde::Serialize> {
     pub request_id: String,
     pub payload: T,
 }
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fail {
     pub request_id: String,

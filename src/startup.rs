@@ -9,7 +9,6 @@ use tracing_actix_web::TracingLogger;
 
 use crate::handler::{health_check, url_add, url_delete, url_redirect};
 
-#[allow(clippy::too_many_lines)]
 pub fn run(listener: TcpListener, redis_client: Client) -> Result<Server, std::io::Error> {
     let redis_client = Data::new(redis_client);
 

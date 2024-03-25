@@ -47,10 +47,10 @@ async fn delete(redis_client: &Client, key: &str) -> QueryResult<()> {
         .map_err(|e| Error::RedisConnection(e.to_string()))?;
     match conn.del::<&str, i8>(key) {
         Ok(val) => {
-            if val > 0 {
-                Ok(())
-            } else {
+            if val == 0 {
                 Err(Error::NotFound(key.to_string()))?
+            } else {
+                Ok(())
             }
         }
         Err(err) => Err(Error::RedisQuery(err.to_string()))?,
