@@ -86,7 +86,6 @@ async fn url_redirect_is_success() {
 
     let res = client
         .get(&format!("{}/4168cd70", &app.address))
-        .header(CONTENT_TYPE, "application/json")
         .send()
         .await
         .expect("Failed to execute request.");
@@ -102,7 +101,6 @@ async fn url_redirect_not_found_is_failure() {
 
     let res = client
         .get(&format!("{}/4168cd7y", &app.address))
-        .header(CONTENT_TYPE, "application/json")
         .send()
         .await
         .expect("Failed to execute request.");
@@ -125,7 +123,6 @@ async fn url_delete_is_success() {
 
     let res = client
         .delete(&format!("{}/4168cd70", &app.address))
-        .header(CONTENT_TYPE, "application/json")
         .send()
         .await
         .expect("Failed to execute request.");
