@@ -17,7 +17,7 @@ struct UrlNew {
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct UrlJsonData {
-    long_url: String,
+    long_url: Option<String>,
 }
 
 impl_json_display!(UrlJsonData);

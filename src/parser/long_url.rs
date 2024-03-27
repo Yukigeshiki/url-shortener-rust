@@ -4,12 +4,16 @@ use validator::ValidateUrl;
 pub struct LongUrl(String);
 
 impl LongUrl {
-    pub fn parse(s: String) -> Result<LongUrl, String> {
+    pub fn parse(s: Option<String>) -> Result<LongUrl, String> {
+        if s.is_none() {
+            return Err("Invalid JSON data: missing field longUrl".to_string());
+        }
+        let s = s.unwrap();
         if s.trim().is_empty() {
-            return Err("URL cannot be empty.".to_string());
+            return Err("Invalid JSON data: field longUrl cannot be empty".to_string());
         }
         if !ValidateUrl::validate_url(&s) {
-            return Err(format!("'{s}' is not a valid URL."));
+            return Err(format!("Invalid JSON data: '{s}' is not a valid long URL"));
         }
         Ok(Self(s))
     }
@@ -28,19 +32,19 @@ mod tests {
 
     #[test]
     fn empty_string_is_rejected() {
-        let email = "".to_string();
-        assert_err!(LongUrl::parse(email));
+        let url = Option::from("".to_string());
+        assert_err!(LongUrl::parse(url));
     }
 
     #[test]
     fn correct_url_format_is_accepted() {
-        let email = "http://localhost.com".to_string();
-        assert_ok!(LongUrl::parse(email));
+        let url = Option::from("http://localhost.com".to_string());
+        assert_ok!(LongUrl::parse(url));
     }
 
     #[test]
     fn non_url_is_rejected() {
-        let email = "hello".to_string();
-        assert_err!(LongUrl::parse(email));
+        let url = Option::from("hello".to_string());
+        assert_err!(LongUrl::parse(url));
     }
 }
