@@ -76,11 +76,10 @@ pub async fn url_add(
 #[tracing::instrument(name = "URL add", skip(redis_client, long_url))]
 async fn add(redis_client: &Client, long_url: &str) -> QueryResult<UrlResponsePayload> {
     let key = &digest(long_url)[0..8];
-    let short_url = format!("http://localhost/{key}");
     let mut payload = UrlResponsePayload {
         key: key.to_string(),
         long_url: long_url.to_string(),
-        short_url,
+        short_url: format!("http://localhost/{key}"),
     };
 
     let mut serialised =
@@ -95,6 +94,7 @@ async fn add(redis_client: &Client, long_url: &str) -> QueryResult<UrlResponsePa
                 .map_err(|e| Error::Serialisation(e.to_string()))?;
             if payload.long_url != deserialised_current.long_url {
                 let key = &digest(format!("{}a", payload.long_url))[0..8];
+                payload.short_url = format!("http://localhost/{key}");
                 payload.key = key.to_string();
                 serialised = serde_json::to_string(&payload)
                     .map_err(|e| Error::Serialisation(e.to_string()))?;
