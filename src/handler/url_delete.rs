@@ -6,7 +6,7 @@ use crate::handler::{Error, Fail, QueryResult, Success};
 
 #[allow(clippy::async_yields_async)]
 #[tracing::instrument(
-    name = "URL redirect route",
+    name = "URL delete route",
     skip(redis_client, request_id, path_param),
     fields(
         param = % path_param
@@ -41,6 +41,7 @@ pub async fn url_delete(
     }
 }
 
+#[tracing::instrument(name = "URL delete", skip(redis_client, key))]
 async fn delete(redis_client: &Client, key: &str) -> QueryResult<()> {
     let mut conn = redis_client
         .get_connection()

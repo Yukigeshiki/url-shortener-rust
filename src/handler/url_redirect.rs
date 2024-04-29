@@ -39,6 +39,7 @@ pub async fn url_redirect(
     }
 }
 
+#[tracing::instrument(name = "URL get", skip(redis_client, key))]
 async fn get(redis_client: &Client, key: &str) -> QueryResult<UrlResponsePayload> {
     let mut conn = redis_client
         .get_connection()
