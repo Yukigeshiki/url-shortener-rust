@@ -1,7 +1,7 @@
-use actix_web::http::header::CONTENT_TYPE;
 use std::net::TcpListener;
 
 use once_cell::sync::Lazy;
+use reqwest::header::CONTENT_TYPE;
 use url_shortener::configuration::get_configuration;
 use url_shortener::startup::run;
 use url_shortener::telemetry::{get_subscriber, init_subscriber};
