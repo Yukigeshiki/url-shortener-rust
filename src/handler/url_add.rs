@@ -98,13 +98,13 @@ async fn add(redis_client: &Client, long_url: &str) -> QueryResult<UrlResponsePa
                 payload.key = key.to_string();
                 serialised = serde_json::to_string(&payload)
                     .map_err(|e| Error::Serialisation(e.to_string()))?;
-                conn.set(key, serialised)
+                conn.set::<&str, String, ()>(key, serialised)
                     .map_err(|e| Error::RedisQuery(e.to_string()))?;
             }
         }
         Err(err) => match err.kind() {
             ErrorKind::TypeError => {
-                conn.set(key, serialised)
+                conn.set::<&str, String, ()>(key, serialised)
                     .map_err(|e| Error::RedisQuery(e.to_string()))?;
             }
             _ => {
